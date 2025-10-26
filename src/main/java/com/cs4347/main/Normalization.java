@@ -25,7 +25,7 @@ public class Normalization {
         System.out.println("Normalization process is working....");
         
         try{
-            processBorrowers("borrower.csv");
+            processBorrowers("borrower.csv", "borrowers.csv");
         } catch(IOException | CsvException e){
             e.printStackTrace();
         }
@@ -41,34 +41,56 @@ public class Normalization {
     
     TO_DO: Case Standardization. All names must use the same case convention
     */
-    private static void processBorrowers(String inputFile) throws IOException, CsvException {
+    private static void processBorrowers(String inputFile, String outputFile) throws IOException, CsvException {
     System.out.println("Processing " + inputFile + " -> ");
-    
     InputStream inputStream = Normalization.class.getResourceAsStream("/" + inputFile);
     if (inputStream == null) {
         System.err.println("File not found in resources: " + inputFile);
         return;
     }
+    CSVReader reader = new CSVReader(new InputStreamReader(inputStream));
+    CSVWriter writer = new CSVWriter(new FileWriter(outputFile));
     
-    try (CSVReader reader = new CSVReader(new InputStreamReader(inputStream))) {
-    List<String[]> allRecords = reader.readAll();
-    
-    // print only first 3 rows to test the reader (IT WORKS !)
-    /*
-        Normalization process is working....
-        Processing borrower.csv -> 
-        [ID0000id, ssn, first_name, last_name, email, address, city, state, phone]
-        [ID000001, 850-47-3740, Mark, Morgan, mmorgan0@g.co, 5677 Coolidge Street, Plano, TX, (469) 904-1438]
-        [ID000002, 256-95-4382, Eric, Warren, ewarren1@ed.gov, 9062 Schurz Drive, Dallas, TX, (214) 701-8127]
-    */
-    
-//    for (int i = 0; i < 3; i++) {
-//        String[] record = allRecords.get(i);
-//        System.out.println(Arrays.toString(record));
-//    }
+    try{
+        
+        List<String[]> allRecords = reader.readAll();
 
+        // print only first 3 rows to test the reader (IT WORKS !)
+        /*
+            Normalization process is working....
+            Processing borrower.csv -> 
+           THis is header --> [ID0000id, ssn, first_name, last_name, email, address, city, state, phone]
+            [ID000001, 850-47-3740, Mark, Morgan, mmorgan0@g.co, 5677 Coolidge Street, Plano, TX, (469) 904-1438]
+            [ID000002, 256-95-4382, Eric, Warren, ewarren1@ed.gov, 9062 Schurz Drive, Dallas, TX, (214) 701-8127]
+        */
 
-}
+    //    for (int i = 0; i < 3; i++) {
+    //        String[] record = allRecords.get(i);
+    //        System.out.println(Arrays.toString(record));
+    //    }
+        String[] header = allRecords.remove(0);
+        //System.out.println("Printing header: \n"+ Arrays.toString(header));
+
+        
+        //Create a map to find column index by name
+        Map<String, Integer> headerMap = new HashMap<>();
+        for(int i = 0; i < header.length; i++){
+            headerMap.put(header[i], i);
+            System.out.println(headerMap);
+        }
+        
+        //Write the new header for the output file
+        writer.writeNext(new String[] {"Card_id", "Ssn", "Bname", "Address", "Phone"} );
+        
+       //Process each record
+       for(String[] borrowerRows : allRecords){
+           String cardID = borrowerRows[headerMap.get("ID0000id")];
+       }
+        
+
+    } catch (IOException e){
+        e.printStackTrace();
+    }
 
 }
 
