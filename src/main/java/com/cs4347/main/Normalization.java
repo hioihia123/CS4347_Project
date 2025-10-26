@@ -25,7 +25,7 @@ public class Normalization {
         System.out.println("Normalization process is working....");
         
         try{
-            processBorrowers("borrower.csv", "borrowers.csv");
+            processBorrowers("borrowers.csv", "borrower.csv");
         } catch(IOException | CsvException e){
             e.printStackTrace();
         }
@@ -42,57 +42,96 @@ public class Normalization {
     TO_DO: Case Standardization. All names must use the same case convention
     */
     private static void processBorrowers(String inputFile, String outputFile) throws IOException, CsvException {
-    System.out.println("Processing " + inputFile + " -> ");
-    InputStream inputStream = Normalization.class.getResourceAsStream("/" + inputFile);
-    if (inputStream == null) {
-        System.err.println("File not found in resources: " + inputFile);
-        return;
-    }
-    CSVReader reader = new CSVReader(new InputStreamReader(inputStream));
-    CSVWriter writer = new CSVWriter(new FileWriter(outputFile));
-    
-    try{
-        
-        List<String[]> allRecords = reader.readAll();
-
-        // print only first 3 rows to test the reader (IT WORKS !)
-        /*
-            Normalization process is working....
-            Processing borrower.csv -> 
-           THis is header --> [ID0000id, ssn, first_name, last_name, email, address, city, state, phone]
-            [ID000001, 850-47-3740, Mark, Morgan, mmorgan0@g.co, 5677 Coolidge Street, Plano, TX, (469) 904-1438]
-            [ID000002, 256-95-4382, Eric, Warren, ewarren1@ed.gov, 9062 Schurz Drive, Dallas, TX, (214) 701-8127]
-        */
-
-    //    for (int i = 0; i < 3; i++) {
-    //        String[] record = allRecords.get(i);
-    //        System.out.println(Arrays.toString(record));
-    //    }
-        String[] header = allRecords.remove(0);
-        //System.out.println("Printing header: \n"+ Arrays.toString(header));
-
-        
-        //Create a map to find column index by name
-        Map<String, Integer> headerMap = new HashMap<>();
-        for(int i = 0; i < header.length; i++){
-            headerMap.put(header[i], i);
-            System.out.println(headerMap);
+        System.out.println("Processing " + inputFile);
+        InputStream inputStream = Normalization.class.getResourceAsStream("/" + inputFile);
+        if (inputStream == null) {
+            System.err.println("File not found in resources: " + inputFile);
+            return;
         }
-        
-        //Write the new header for the output file
-        writer.writeNext(new String[] {"Card_id", "Ssn", "Bname", "Address", "Phone"} );
-        
-       //Process each record
-       for(String[] borrowerRows : allRecords){
-           String cardID = borrowerRows[headerMap.get("ID0000id")];
-       }
-        
+        CSVReader reader = new CSVReader(new InputStreamReader(inputStream));
+        CSVWriter writer = new CSVWriter(new FileWriter(outputFile));
 
-    } catch (IOException e){
-        e.printStackTrace();
+        try{
+            //Read all records at once (1001 rows, including the header row)
+            List<String[]> allRecords = reader.readAll();
+            System.out.println("Rows read: " + allRecords.size());
+
+
+            // print only first 3 rows to test the reader (IT WORKS !)
+            /*
+                Normalization process is working....
+                Processing borrower.csv -> 
+               THis is header --> [ID0000id, ssn, first_name, last_name, email, address, city, state, phone]
+                [ID000001, 850-47-3740, Mark, Morgan, mmorgan0@g.co, 5677 Coolidge Street, Plano, TX, (469) 904-1438]
+                [ID000002, 256-95-4382, Eric, Warren, ewarren1@ed.gov, 9062 Schurz Drive, Dallas, TX, (214) 701-8127]
+            */
+
+        //    for (int i = 0; i < 3; i++) {
+        //        String[] record = allRecords.get(i);
+        //        System.out.println(Arrays.toString(record));
+        //    }
+            String[] header = allRecords.remove(0);
+            //System.out.println("Printing header: \n"+ Arrays.toString(header));
+
+
+            //Create a map to find column index by name
+            Map<String, Integer> headerMap = new HashMap<>();
+            for(int i = 0; i < header.length; i++){
+                headerMap.put(header[i], i);
+                //System.out.println(headerMap);
+            }
+
+            //Write the new header for the output file
+            writer.writeNext(new String[] {"Card_id", "Ssn", "Bname", "Address", "Phone"} );
+
+           //Process each record
+           for(String[] borrowerRows : allRecords){
+               String cardID = borrowerRows[headerMap.get("ID0000id")];
+               
+               String ssn = borrowerRows[headerMap.get("ssn")];
+               
+               String bname = borrowerRows[headerMap.get("first_name")] 
+                       + " "+ borrowerRows[headerMap.get("last_name")];
+               
+               String address = borrowerRows[headerMap.get("address")] 
+                       + ", " + borrowerRows[headerMap.get("city")]
+                       + ", " + borrowerRows[headerMap.get("state")];
+               
+               String phone = borrowerRows[headerMap.get("phone")];
+               //System.out.println(bname);
+               
+               writer.writeNext(new String[]{cardID, ssn, bname,address,phone});
+
+           }
+           writer.flush();
+
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
     }
-
-}
+    
+//    private static String caseStandardize(String input){
+//        if(input == null || input.isEmpty()){
+//            return "";
+//        }
+//        
+//        StringBuilder titleCase = new StringBuilder();
+//        boolean nextTitleCase = true;
+//        
+//        for(char c : input.toLowerCase().toCharArray()){
+//            if(Character.isSpaceChar(c)){
+//                nextTitleCase = true;
+//            }
+//            else if(nextTitleCase == false){
+//                c = Character.toTitleCase(c);
+//                nextTitleCase = false;
+//            }
+//            titleCase.append(c);
+//        }
+//        return titleCase.toString();
+//    }
+    
 
     
 }
