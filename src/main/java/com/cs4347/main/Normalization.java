@@ -161,6 +161,10 @@ public class Normalization {
         CSVReader reader = new CSVReaderBuilder(new InputStreamReader(inputStream))
                 .withCSVParser(parser)
                 .build();
+        
+        CSVWriter writer = new CSVWriter(new FileWriter(bookFile));
+        CSVWriter writer2 = new CSVWriter(new FileWriter(authorFile));
+        CSVWriter writer3 = new CSVWriter(new FileWriter(bookAuthorFile));
 
         
         try{
@@ -192,11 +196,12 @@ public class Normalization {
                //Create the link
                //[4338, 155874424X], [596, 0451197275], [1989, 083175006]
                bookAuthors.add(Arrays.asList(authorId, isbn));
-               System.out.println(bookAuthors);
-
+               //System.out.println(bookAuthors);
             }
-            
-
+            //Write the data
+            writer.writeNext(new String[]{"Isbn", "Title"});
+            uniqueBooks.forEach(book -> writer.writeNext(new String[]{book.get(0), book.get(1)}));
+            //System.out.println("Successfully wrote " + uniqueBooks.size() + " records to " + bookFile);
                 
         }catch(IOException e){
             e.printStackTrace();
