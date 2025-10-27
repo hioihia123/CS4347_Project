@@ -144,11 +144,11 @@ public class Normalization {
         System.out.println("Started processing" + inputFile);
         
         //Book table (unique)
-        Set<List<String>> uniqueBooks = new HashSet<>();
+        Set<List<String>> uniqueBooks = new LinkedHashSet<>();
         //Authors table (unique)
         Map<String, Integer> authorsMap = new HashMap<>();
         //Book_Authors table
-        Set<List<Object>> bookAuthors = new HashSet<>();
+        Set<List<Object>> bookAuthors = new LinkedHashSet<>();
         
         int nextAuthorId = 1;
         
