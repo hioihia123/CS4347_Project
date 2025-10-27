@@ -187,9 +187,10 @@ public class Normalization {
                
                //Author table(unique)
                String authorName = bookRows[headerMap.get("Author")];
-               if(authorName == null || authorName.trim().isEmpty()){
+               /*if(authorName == null || authorName.trim().isEmpty()){
                    continue;
                }
+               */
                if(!authorsMap.containsKey(authorName)){
                    authorsMap.put(authorName, nextAuthorId++);
                }
