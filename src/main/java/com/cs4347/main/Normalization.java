@@ -209,7 +209,11 @@ public class Normalization {
             writer2.writeNext(new String[]{"Author_id", "Name"});
             authorsMap.forEach((name,id) -> writer2.writeNext(new String[]{String.valueOf(id), name}));
             writer2.flush();
-            System.out.println("Successfully wrote " + authorsMap.size() + " records to " + authorFile);
+            //System.out.println("Successfully wrote " + authorsMap.size() + " records to " + authorFile);
+            
+            //--Write the data(Book_Authors table)
+            writer3.writeNext(new String[]{"Author_id", "Isbn"});
+            //TO-DO: FIX THIS ->>>>> bookAuthors.forEach(() -> writer3.writeNext(new String[]{String.valueOf(id), ))
                 
         }catch(IOException e){
             e.printStackTrace();
