@@ -8,6 +8,19 @@ package com.cs4347.main;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvException;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
+import com.opencsv.CSVParser;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.exceptions.CsvException;
+
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.util.*;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -26,6 +39,7 @@ public class Normalization {
         
         try{
             processBorrowers("borrowers.csv", "borrower.csv");
+            processBooks("books.csv", "book.csv", "authors.csv", "book_authors.csv");
         } catch(IOException | CsvException e){
             e.printStackTrace();
         }
@@ -39,7 +53,9 @@ public class Normalization {
         address + city + state ->       Address
         phone ->                        Phone
     
-    TO_DO: Case Standardization. All names must use the same case convention
+    TO-DO: Read all rows and normalized(finished)
+    TO-DO: Write to borrower.csv(finished)
+    TO-DO: Case Standardization. All names must use the same case convention (finished)
     */
     private static void processBorrowers(String inputFile, String outputFile) throws IOException, CsvException {
         System.out.println("Processing " + inputFile);
@@ -54,7 +70,7 @@ public class Normalization {
         try{
             //Read all records at once (1001 rows, including the header row)
             List<String[]> allRecords = reader.readAll();
-            System.out.println("Rows read: " + allRecords.size());
+            //System.out.println("Rows read: " + allRecords.size());
 
 
             // print only first 3 rows to test the reader (IT WORKS !)
@@ -111,6 +127,81 @@ public class Normalization {
 
     }
     
+    //---PART 2------
+    
+    /*
+        BOOK table ( has to be unique )
+        Isbn Title
+    
+        BOOK_AUTHORS table
+        Author_id   Isbn
+    
+        AUTHORS table ( also has to be unique )
+        Author_id   Name
+        
+    */
+    
+    private static void processBooks(String inputFile, String bookFile, String authorFile, String bookAuthorFile) throws IOException, CsvException{
+        System.out.println("Started processing" + inputFile);
+        
+        //Book table (unique)
+        Set<List<String>> uniqueBooks = new HashSet<>();
+        //Authors table (unique)
+        Map<String, Integer> authorsMap = new HashMap<>();
+        //Book_Authors table
+        Set<List<Object>> bookAuthors = new HashSet<>();
+        
+        int nextAuthorId = 1;
+        
+        InputStream inputStream = Normalization.class.getResourceAsStream("/" + inputFile);
+        CSVParser parser = new CSVParserBuilder()
+                .withSeparator('\t')
+                .build();
+
+        CSVReader reader = new CSVReaderBuilder(new InputStreamReader(inputStream))
+                .withCSVParser(parser)
+                .build();
+
+        
+        try{
+            List<String[]> allRecords = reader.readAll();
+            String[] header = allRecords.remove(0);
+
+            Map<String, Integer> headerMap = new HashMap<>();
+            
+            for (int i = 0; i < header.length; i++) {
+                headerMap.put(header[i], i);
+            }
+            
+            //{Pages=6, Cover=4, ISBN10=0, Title=2, Author=3, ISBN13=1, Publisher=5}
+            System.out.println(headerMap);
+            
+            for(String[] bookRows: allRecords){
+                //Book table(unique)
+               String isbn = bookRows[headerMap.get("ISBN10")];
+               String title = bookRows[headerMap.get("Title")];
+               uniqueBooks.add(Arrays.asList(isbn, title));
+               
+               //Author table(unique)
+               String authorName = bookRows[headerMap.get("Author")];
+               if(!authorsMap.containsKey(authorName)){
+                   authorsMap.put(authorName, nextAuthorId++);
+               }
+               Integer authorId = authorsMap.get(authorName);
+               
+               //Create the link
+               //[4338, 155874424X], [596, 0451197275], [1989, 083175006]
+               bookAuthors.add(Arrays.asList(authorId, isbn));
+               System.out.println(bookAuthors);
+
+            }
+            
+
+                
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
 //    private static String caseStandardize(String input){
 //        if(input == null || input.isEmpty()){
 //            return "";
