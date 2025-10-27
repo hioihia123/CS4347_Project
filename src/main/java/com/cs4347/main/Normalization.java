@@ -213,7 +213,7 @@ public class Normalization {
             
             //--Write the data(Book_Authors table)
             writer3.writeNext(new String[]{"Author_id", "Isbn"});
-            //TO-DO: FIX THIS ->>>>> bookAuthors.forEach(() -> writer3.writeNext(new String[]{String.valueOf(id), ))
+            bookAuthors.forEach(bookAuthorLinks -> writer3.writeNext(new String[]{String.valueOf(bookAuthorLinks.get(0)), String.valueOf(bookAuthorLinks.get(1))}));
                 
         }catch(IOException e){
             e.printStackTrace();
