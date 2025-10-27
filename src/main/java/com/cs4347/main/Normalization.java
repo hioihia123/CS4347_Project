@@ -20,7 +20,6 @@ import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
-import java.util.*;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -188,6 +187,9 @@ public class Normalization {
                
                //Author table(unique)
                String authorName = bookRows[headerMap.get("Author")];
+               if(authorName == null || authorName.trim().isEmpty()){
+                   continue;
+               }
                if(!authorsMap.containsKey(authorName)){
                    authorsMap.put(authorName, nextAuthorId++);
                }
@@ -198,10 +200,16 @@ public class Normalization {
                bookAuthors.add(Arrays.asList(authorId, isbn));
                //System.out.println(bookAuthors);
             }
-            //Write the data
+            //--Write the data (Book table)---
             writer.writeNext(new String[]{"Isbn", "Title"});
             uniqueBooks.forEach(book -> writer.writeNext(new String[]{book.get(0), book.get(1)}));
             //System.out.println("Successfully wrote " + uniqueBooks.size() + " records to " + bookFile);
+            
+            //--Write the data (Authors table)
+            writer2.writeNext(new String[]{"Author_id", "Name"});
+            authorsMap.forEach((name,id) -> writer2.writeNext(new String[]{String.valueOf(id), name}));
+            writer2.flush();
+            System.out.println("Successfully wrote " + authorsMap.size() + " records to " + authorFile);
                 
         }catch(IOException e){
             e.printStackTrace();
