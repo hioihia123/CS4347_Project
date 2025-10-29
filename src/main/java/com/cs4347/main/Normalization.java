@@ -146,7 +146,7 @@ public class Normalization {
         //Book table (unique)
         Set<List<String>> uniqueBooks = new LinkedHashSet<>();
         //Authors table (unique)
-        Map<String, Integer> authorsMap = new HashMap<>();
+        Map<String, Integer> authorsMap = new LinkedHashMap<>();
         //Book_Authors table
         Set<List<Object>> bookAuthors = new LinkedHashSet<>();
         
@@ -186,20 +186,27 @@ public class Normalization {
                uniqueBooks.add(Arrays.asList(isbn, title));
                
                //Author table(unique)
-               String authorName = bookRows[headerMap.get("Author")];
+               String authorCell = bookRows[headerMap.get("Author")];
                /*if(authorName == null || authorName.trim().isEmpty()){
                    continue;
                }
                */
-               if(!authorsMap.containsKey(authorName)){
-                   authorsMap.put(authorName, nextAuthorId++);
+               String[] authors = authorCell.split(",");
+               for(String authorName: authors){
+                   authorName = authorName.trim();
+                   
+                   if(!authorsMap.containsKey(authorName)){
+                       authorsMap.put(authorName, nextAuthorId++);
+                   }
+                   
+                   Integer authorId = authorsMap.get(authorName);
+                   //Create the link
+                   //[4338, 155874424X], [596, 0451197275], [1989, 083175006]
+                   bookAuthors.add(Arrays.asList(authorId, isbn));
+                   //System.out.println(bookAuthors);
                }
-               Integer authorId = authorsMap.get(authorName);
+                             
                
-               //Create the link
-               //[4338, 155874424X], [596, 0451197275], [1989, 083175006]
-               bookAuthors.add(Arrays.asList(authorId, isbn));
-               //System.out.println(bookAuthors);
             }
             //--Write the data (Book table)---
             writer.writeNext(new String[]{"Isbn", "Title"});
